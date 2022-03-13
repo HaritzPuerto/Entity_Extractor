@@ -1,4 +1,4 @@
-from src.graph_creation import SRL_model
+from src import SRL_model
 from datasets import load_dataset
 
 import os
