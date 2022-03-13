@@ -1,4 +1,4 @@
-from src.graph_creation import SRL_model, Entity_model
+from src import Entity_model
 from datasets import load_dataset
 
 import os
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     ent_predictor = Entity_model(args.spacy_model)
     dataset = load_dataset(args.dataset)
 
-    for split in args.dataset.keys():
+    for split in dataset.keys():
         list_questions = [q.lstrip() for q in dataset['train']['question']]
         dict_ent_questions = ent_predictor.get_entities(list_questions)
         dict_ent_contexts = ent_predictor.get_entities(dataset['train']['context'])
