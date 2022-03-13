@@ -1,5 +1,6 @@
 from src import SRL_model
 from datasets import load_dataset
+from tqdm import trange
 
 import os
 import json
@@ -14,16 +15,17 @@ if __name__ == '__main__':
     parser.add_argument("--dataset", help="from HF")
     parser.add_argument("--device", default='cpu')
     parser.add_argument("--batch_size", default=32, type=int)
+    parser.add_argument("--model_path", default='models/structured-prediction-srl-bert.2020.12.15.tar.gz')
     args = parser.parse_args()
 
-    srl_predictor = SRL_model(device=args.device)
+    srl_predictor = SRL_model(device=args.device, predictor_path=args.model_path)
     dataset = load_dataset(args.dataset)
     
     list_srl_questions = []
     list_srl_contexts = []
     for split in dataset.keys():
-        dataset_len = len(dataset[split])
-        for i in range(0, dataset_len, args.batch_size):
+        dataset_len =  len(dataset[split])
+        for i in trange(0, dataset_len, args.batch_size):
             # create batch of dataset instances
             j = i + args.batch_size
             list_questions = [q.lstrip() for q in dataset[split][i:j]['question']]
