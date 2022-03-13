@@ -1,5 +1,5 @@
 import spacy
-
+from tqdm import tqdm
 
 class Entity_model():
     def __init__(self, spacy_model='en_core_web_sm'):
@@ -16,7 +16,7 @@ class Entity_model():
         '''
         dict_sent_idx2entities = dict() # this will be the final output
         # for each sentence
-        for sent_idx, sent in enumerate(list_sentences):
+        for sent_idx, sent in enumerate(tqdm(list_sentences)):
             # initialize the list of entities for the current sentence
             dict_sent_idx2entities[sent_idx] = [] 
             # use spacy processor on the question | context sentence
