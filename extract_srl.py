@@ -24,6 +24,7 @@ if __name__ == '__main__':
     
     list_srl_questions = []
     list_srl_contexts = []
+    list_errors = []
     for split in dataset.keys():
         dataset_len = len(dataset[split])
         for i in trange(0, dataset_len, args.batch_size):
@@ -31,10 +32,24 @@ if __name__ == '__main__':
             j = i + args.batch_size
             list_questions = [clean_input(q) for q in dataset[split][i:j]['question']]
             # question
-            list_srl_questions.extend(srl_predictor.get_srl_args(list_questions))
+            try:
+                slr_pred = srl_predictor.get_srl_args(list_questions)
+            except:
+                slr_pred = []
+                list_errors.append((i, list_questions))
+                with open('./errors.json', 'w') as f:
+                    json.dump(list_errors, f)
+            list_srl_questions.extend(slr_pred)
             # context
             list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
-            list_srl_contexts.extend(srl_predictor.get_srl_args(list_contexts))
+            try:
+                srl_pred = srl_predictor.get_srl_args(list_contexts)
+            except:
+                srl_pred = []
+                list_errors.append((i, list_contexts))
+                with open('./errors.json', 'w') as f:
+                    json.dump(list_errors, f)
+            list_srl_contexts.extend(srl_pred)
 
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
