@@ -1,6 +1,7 @@
 from src import SRL_model
 from datasets import load_dataset
 from tqdm import trange
+from sqlitedict import SqliteDict
 
 import os
 import json
@@ -26,9 +27,16 @@ if __name__ == '__main__':
     dict_srl_contexts = dict()
     list_errors = []
     for split in dataset.keys():
+        # 1) setup database
+        output_dir = os.path.join('data/srl/', args.dataset, split)
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        db_srl_questions = SqliteDict(os.path.join(output_dir, 'question_srl.sqlite'))
+        db_question_errors = SqliteDict(os.path.join(output_dir, 'question_errors.sqlite'))
+        db_srl_contexts = SqliteDict(os.path.join(output_dir, 'context_srl.sqlite'))
+        db_context_errors = SqliteDict(os.path.join(output_dir, 'context_errors.sqlite'))
+
+
         dataset_len = len(dataset[split])
-        if split == 'train':
-            dataset_len = 1000 
         for i in trange(0, dataset_len, args.batch_size):
             # create batch of dataset instances
             j = i + args.batch_size
@@ -37,31 +45,31 @@ if __name__ == '__main__':
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_questions))
                 for idx in range(i,j):
+                    db_srl_questions[str(idx)] = srl_pred[idx-i]
                     dict_srl_questions[idx] = srl_pred[idx-i]
             except:
                 for idx in range(i,j):
-                    dict_srl_questions[idx] = []]
-                list_errors.append((i, list_questions))
-                with open('./errors.json', 'w') as f:
-                    json.dump(list_errors, f)
+                    db_srl_questions[str(idx)] = []
+                    db_question_errors[str(idx)] = list_questions[idx-i]
             
             # context
             list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_contexts))
                 for idx in range(i,j):
-                    dict_srl_contexts[idx] = srl_pred[idx-i]
+                    db_srl_contexts[str(idx)] = srl_pred[idx-i]
+                    
             except:
                 for idx in range(i,j):
-                    dict_srl_contexts[idx] = []
-                list_errors.append((i, list_contexts))
-                with open('./errors.json', 'w') as f:
-                    json.dump(list_errors, f)
+                    db_srl_contexts[str(idx)] = []
+                    db_context_errors[str(idx)] = list_contexts[idx-i]
             
-            
-        output_dir = os.path.join('data/srl/', args.dataset, split)
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
-        with open(os.path.join(output_dir, 'question_srl.json'), 'w') as f:
-            json.dump(dict_srl_questions, f)
-        with open(os.path.join(output_dir, 'context_srl.json'), 'w') as f:
-            json.dump(dict_srl_contexts, f)
+        db_srl_questions.commit()   
+        db_srl_contexts.commit()
+        db_srl_questions.close()
+        db_srl_contexts.close()
+
+        db_question_errors.commit()
+        db_context_errors.commit()
+        db_question_errors.close()
+        db_context_errors.close()
