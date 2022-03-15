@@ -36,24 +36,28 @@ if __name__ == '__main__':
             # question
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_questions))
+                for idx in range(i,j):
+                    dict_srl_questions[idx] = srl_pred[idx-i]
             except:
-                srl_pred = []
+                for idx in range(i,j):
+                    dict_srl_questions[idx] = []]
                 list_errors.append((i, list_questions))
                 with open('./errors.json', 'w') as f:
                     json.dump(list_errors, f)
-            for idx in range(i,j):
-                dict_srl_questions[idx] = srl_pred[idx-i]
+            
             # context
             list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_contexts))
+                for idx in range(i,j):
+                    dict_srl_contexts[idx] = srl_pred[idx-i]
             except:
-                srl_pred = []
+                for idx in range(i,j):
+                    dict_srl_contexts[idx] = []
                 list_errors.append((i, list_contexts))
                 with open('./errors.json', 'w') as f:
                     json.dump(list_errors, f)
-            for idx in range(i,j):
-                dict_srl_contexts[idx] = srl_pred[idx-i]
+            
             
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
