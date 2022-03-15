@@ -27,13 +27,15 @@ if __name__ == '__main__':
     list_errors = []
     for split in dataset.keys():
         dataset_len = len(dataset[split])
+        if split == 'train':
+            dataset_len = 1000 
         for i in trange(0, dataset_len, args.batch_size):
             # create batch of dataset instances
             j = i + args.batch_size
             list_questions = [clean_input(q) for q in dataset[split][i:j]['question']]
             # question
             try:
-                srl_pred = srl_predictor.get_srl_args(list_questions)
+                srl_pred = list(srl_predictor.get_srl_args(list_questions))
             except:
                 srl_pred = []
                 list_errors.append((i, list_questions))
@@ -44,7 +46,7 @@ if __name__ == '__main__':
             # context
             list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
             try:
-                srl_pred = srl_predictor.get_srl_args(list_contexts)
+                srl_pred = list(srl_predictor.get_srl_args(list_contexts))
             except:
                 srl_pred = []
                 list_errors.append((i, list_contexts))
@@ -52,7 +54,7 @@ if __name__ == '__main__':
                     json.dump(list_errors, f)
             for idx in range(i,j):
                 dict_srl_contexts[idx] = srl_pred[idx-i]
-
+            
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(output_dir, 'question_srl.json'), 'w') as f:
