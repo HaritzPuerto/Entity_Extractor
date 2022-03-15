@@ -22,8 +22,8 @@ if __name__ == '__main__':
     srl_predictor = SRL_model(device=args.device, predictor_path=args.model_path)
     dataset = load_dataset(args.dataset)
     
-    list_srl_questions = []
-    list_srl_contexts = []
+    dict_srl_questions = dict()
+    dict_srl_contexts = dict()
     list_errors = []
     for split in dataset.keys():
         dataset_len = len(dataset[split])
@@ -33,13 +33,14 @@ if __name__ == '__main__':
             list_questions = [clean_input(q) for q in dataset[split][i:j]['question']]
             # question
             try:
-                slr_pred = srl_predictor.get_srl_args(list_questions)
+                srl_pred = srl_predictor.get_srl_args(list_questions)
             except:
-                slr_pred = []
+                srl_pred = []
                 list_errors.append((i, list_questions))
                 with open('./errors.json', 'w') as f:
                     json.dump(list_errors, f)
-            list_srl_questions.extend(slr_pred)
+            for idx in range(i,j):
+                dict_srl_questions[idx] = srl_pred[idx-i]
             # context
             list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
             try:
@@ -49,11 +50,12 @@ if __name__ == '__main__':
                 list_errors.append((i, list_contexts))
                 with open('./errors.json', 'w') as f:
                     json.dump(list_errors, f)
-            list_srl_contexts.extend(srl_pred)
+            for idx in range(i,j):
+                dict_srl_contexts[idx] = srl_pred[idx-i]
 
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(output_dir, 'question_srl.json'), 'w') as f:
-            json.dump({i: x for i, x in enumerate(list_srl_questions)}, f)
+            json.dump(dict_srl_questions, f)
         with open(os.path.join(output_dir, 'context_srl.json'), 'w') as f:
-            json.dump({i: x for i, x in enumerate(list_srl_contexts)}, f)
+            json.dump(dict_srl_contexts, f)
