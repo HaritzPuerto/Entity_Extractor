@@ -32,6 +32,9 @@ class SRL_model():
             print("\t Tuple:", i)
             self.print_srl_tuple(srl_tuple)
 
+    def __clean_input(self, s):
+        return " ".join(s.lstrip().rstrip().split())
+
     def get_srl_args(self, list_sentences):
         '''
         Input:
@@ -42,6 +45,7 @@ class SRL_model():
         '''
         
         # 3 - predict the SRL tags of each sentence
+        list_sentences = [self.__clean_input(s) for s in list_sentences]
         dict_ins_idx2outputs, list_dict_token_idx2char_idx = self._srl_batch_predict(list_sentences)
 
         # 4 - process the SRL predictions

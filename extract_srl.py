@@ -9,9 +9,6 @@ from pathlib import Path
 import argparse
 
 
-def clean_input(s):
-    return " ".join(s.lstrip().rstrip().split())
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="from HF")
@@ -40,7 +37,7 @@ if __name__ == '__main__':
         for i in trange(0, dataset_len, args.batch_size):
             # create batch of dataset instances
             j = i + args.batch_size
-            list_questions = [clean_input(q) for q in dataset[split][i:j]['question']]
+            list_questions = dataset[split][i:j]['question']
             # question
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_questions))
@@ -53,7 +50,7 @@ if __name__ == '__main__':
                     db_question_errors[str(idx)] = list_questions[idx-i]
             
             # context
-            list_contexts = [clean_input(x) for x in dataset[split][i:j]['context']]
+            list_contexts = dataset[split][i:j]['context']
             try:
                 srl_pred = list(srl_predictor.get_srl_args(list_contexts))
                 for idx in range(i,j):
