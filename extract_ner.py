@@ -25,13 +25,18 @@ if __name__ == '__main__':
         db_ent_question = SqliteDict(os.path.join(output_dir, 'question_ent.sqlite'))
         db_ent_context = SqliteDict(os.path.join(output_dir, 'context_ent.sqlite'))
         
-        # 2) extract entities
-        dict_ent_questions = ent_predictor.get_entities(dataset['train']['question'])
-        dict_ent_contexts = ent_predictor.get_entities(dataset['train']['context'])
-        
-        # 3) save entities
+        # 2) extract question entities
+        dict_sent_idx2entities = ent_predictor.get_entities(dataset[split]['question'])
+        for idx, list_ents in dict_sent_idx2entities.items():
+            db_ent_question[str(idx)] = list_ents
+        # 3) save question entities
         db_ent_question.commit()
         db_ent_question.close()
 
+        # 4) extract context entities
+        dict_sent_idx2entities = ent_predictor.get_entities(dataset[split]['context'])
+        for idx, list_ents in dict_sent_idx2entities.items():
+            db_ent_context[str(idx)] = list_ents 
+        # 5) save context entities
         db_ent_context.commit()
         db_ent_context.close()
