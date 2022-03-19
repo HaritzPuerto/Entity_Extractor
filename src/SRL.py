@@ -34,6 +34,7 @@ class SRL_model():
             self.print_srl_tuple(srl_tuple)
 
     def get_srl_args(self, sent):
+        sent = self.__clean_input(sent)
         tokenized_sent = self.spacy_nlp(sent)
         dict_token_idx2char_idx = {i: (x.idx, x.idx+len(x.text)) for i, x in enumerate(tokenized_sent)}
         srl_predictions = self.predictor.predict_tokenized([w.text for w in tokenized_sent])
@@ -81,3 +82,10 @@ class SRL_model():
                     dict_tag2word_idx[tag]['text'] = sent[st_char:end_char]
                 list_preds_instance.append(dict_tag2word_idx)
         return list_preds_instance
+
+    def __clean_input(self, s):
+        '''
+        Remove duplicated whitespaces.
+        There are several instances in SQuAD with double spaces that makes tricky the allignment in the tokenization.
+        '''
+        return " ".join(s.split())
