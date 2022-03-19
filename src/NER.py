@@ -3,9 +3,7 @@ from tqdm import tqdm
 
 class Entity_model():
     def __init__(self, spacy_model='en_core_web_sm'):
-        self.predictor = None
         self.nlp = spacy.load(spacy_model)
-
 
     def get_entities(self, list_sentences):
         '''
@@ -24,7 +22,8 @@ class Entity_model():
             # get the entities of the two sentences concatenated (query and context)
             for e in spacy_sent.ents: 
                 # create the dictionary to store the metadata of the entity
-                dict_ent = {'char_idx': (e.start_char, e.end_char), # eg: [0,1,2]
+                dict_ent = {'char_idx': (e.start_char, e.end_char), # eg: (0,3)
+                            'word_idx': (e.start, e.end), # eg: (0,1)
                             'ent_type': e.label_, # eg: "PERSON"
                             'text': e.text, # eg: "John"
                             }
