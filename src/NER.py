@@ -5,9 +5,6 @@ class Entity_model():
     def __init__(self, spacy_model='en_core_web_sm'):
         self.nlp = spacy.load(spacy_model)
 
-    def __clean_input(self, s):
-        return " ".join(s.lstrip().rstrip().split())
-
     def get_entities(self, list_sentences):
         '''
         Input:
@@ -16,7 +13,6 @@ class Entity_model():
             - dict_sent_idx2entities: dictionary that maps each sentence idx to a list of entities
         '''
         dict_sent_idx2entities = dict() # this will be the final output
-        list_sentences = [self.__clean_input(s) for s in list_sentences ]
         # for each sentence
         for sent_idx, sent in enumerate(tqdm(list_sentences)):
             # initialize the list of entities for the current sentence
