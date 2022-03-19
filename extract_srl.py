@@ -1,6 +1,6 @@
 from src import SRL_model
 from datasets import load_dataset
-from tqdm import trange
+from tqdm.auto import tqdm
 from sqlitedict import SqliteDict
 
 import os
@@ -28,45 +28,17 @@ if __name__ == '__main__':
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         db_srl_questions = SqliteDict(os.path.join(output_dir, 'question_srl.sqlite'))
-        db_question_errors = SqliteDict(os.path.join(output_dir, 'question_errors.sqlite'))
         db_srl_contexts = SqliteDict(os.path.join(output_dir, 'context_srl.sqlite'))
-        db_context_errors = SqliteDict(os.path.join(output_dir, 'context_errors.sqlite'))
 
-
-        dataset_len = len(dataset[split])
-        for i in trange(0, dataset_len, args.batch_size):
-            # create batch of dataset instances
-            j = i + args.batch_size
-            list_questions = dataset[split][i:j]['question']
+        # 2) extract SRL
+        for i, x in enumerate(tqdm(dataset[split])):
             # question
-            try:
-                srl_pred = list(srl_predictor.get_srl_args(list_questions))
-                for idx in range(i,j):
-                    db_srl_questions[str(idx)] = srl_pred[idx-i]
-                    dict_srl_questions[idx] = srl_pred[idx-i]
-            except:
-                for idx in range(i,j):
-                    db_srl_questions[str(idx)] = []
-                    db_question_errors[str(idx)] = list_questions[idx-i]
-            
+            db_srl_questions[str(i)] = srl_predictor.get_srl_args(x['question'])
             # context
-            list_contexts = dataset[split][i:j]['context']
-            try:
-                srl_pred = list(srl_predictor.get_srl_args(list_contexts))
-                for idx in range(i,j):
-                    db_srl_contexts[str(idx)] = srl_pred[idx-i]
-                    
-            except:
-                for idx in range(i,j):
-                    db_srl_contexts[str(idx)] = []
-                    db_context_errors[str(idx)] = list_contexts[idx-i]
-            
+            db_srl_contexts[str(i)] = srl_predictor.get_srl_args(x['context'])
+        
+        # 3) save to DB
         db_srl_questions.commit()   
         db_srl_contexts.commit()
         db_srl_questions.close()
         db_srl_contexts.close()
-
-        db_question_errors.commit()
-        db_context_errors.commit()
-        db_question_errors.close()
-        db_context_errors.close()
