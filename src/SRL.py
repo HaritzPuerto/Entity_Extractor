@@ -106,30 +106,19 @@ class SRL_model():
     def _process_srl_predictions(self, list_sentences, dict_ins_idx2outputs, list_dict_token_idx2char_idx):
         '''
         Input: 
-            - dict_ins_idx2outputs: dictionary with the srl arguments. Keys: instance index, values:
-            - tokenized_batch: transformer's tokenizer tokens (i.e., with ids, type_ids, attention_mask)
-            - dict_sent_idx2token_idx2wordpiece_idx: dictionary that maps each token idx (whitespace tokens) to wordpiece idx (wordpiece tokens) # num_sent x num_tokens # 2 (i.e, starting and ending idx)
-            - list_dict_token_idx2char_idx: maps sent idx to a dict that maps token idx to char idx
+            - list_sentences: list of sentences (str)
+            - dict_ins_idx2outputs: dictionary with the srl arguments.
+            - list_dict_token_idx2char_idx: list (for each sentence) of dictionaries that maps word tokens to char idx
         Output:
             - list of SRL tuples # num_sent x num_verbs x num_args. Example of an SRL tuple:
-                {'ARG0': {'word_idx': [0],
-                        'wordpiece_idx': (1, 2),
-                        'ids': [146],
-                        'type_ids': [0],
-                        'attention_mask': [1],
-                        'tokens': ['I']},
-                'V': {'word_idx': [2],
-                        'wordpiece_idx': (3, 4),
-                        'ids': [1684],
-                        'type_ids': [0],
-                        'attention_mask': [1],
-                        'tokens': ['working']},
-                'ARG1': {'word_idx': [3, 4, 5, 6, 7, 8],
-                        'wordpiece_idx': (4, 11),
-                        'ids': [1113, 170, 154, 1592, 1933, 1107, 1860],
-                        'type_ids': [0, 0, 0, 0, 0, 0, 0],
-                        'attention_mask': [1, 1, 1, 1, 1, 1, 1],
-                        'tokens': ['on', 'a', 'Q', '##A', 'project', 'in', 'Germany']}},
+                [{'ARG0': {'word_idx': [0, 1, 2, 3, 4],
+                           'char_idx': (0, 28),
+                           'text': 'What institute at Notre Dame'},
+                'V': {'word_idx': [5], 'char_idx': (29, 36), 'text': 'studies'},
+                'ARG1': {'word_idx': [6, 7, 8, 9, 10],
+                         'char_idx': (37, 69),
+                         'text': 'the reasons for violent conflict'}}
+                ]
         '''
         for i, list_srl_instances in dict_ins_idx2outputs.items():
             list_preds_instance = []
