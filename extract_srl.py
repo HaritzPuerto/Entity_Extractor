@@ -20,25 +20,29 @@ if __name__ == '__main__':
     srl_predictor = SRL_model(device=args.device, predictor_path=args.model_path)
     dataset = load_dataset(args.dataset)
     
-    dict_srl_questions = dict()
-    dict_srl_contexts = dict()
-    list_errors = []
     for split in dataset.keys():
         # 1) setup database
         output_dir = os.path.join('data/srl/', args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
         db_srl_questions = SqliteDict(os.path.join(output_dir, 'question_srl.sqlite'))
         db_srl_contexts = SqliteDict(os.path.join(output_dir, 'context_srl.sqlite'))
+        db_errors = SqliteDict(os.path.join(output_dir, 'errors.sqlite'))
 
         # 2) extract SRL
         for i, x in enumerate(tqdm(dataset[split])):
-            # question
-            db_srl_questions[str(i)] = srl_predictor.get_srl_args(x['question'])
-            # context
-            db_srl_contexts[str(i)] = srl_predictor.get_srl_args(x['context'])
+            try:
+                # question
+                db_srl_questions[str(i)] = srl_predictor.get_srl_args(x['question'])
+                # context
+                db_srl_contexts[str(i)] = srl_predictor.get_srl_args(x['context'])
+            except:
+                db_errors[str(i)] = i
         
         # 3) save to DB
         db_srl_questions.commit()   
         db_srl_contexts.commit()
         db_srl_questions.close()
         db_srl_contexts.close()
+
+        db_errors.commit()
+        db_errors.close()
