@@ -6,7 +6,11 @@ class Entity_model():
         self.nlp = spacy.load(spacy_model)
 
     def __clean_input(self, s):
-        return " ".join(s.lstrip().rstrip().split())
+        '''
+        Remove duplicated whitespaces.
+        There are several instances in SQuAD with double spaces that makes tricky the allignment in the tokenization.
+        '''
+        return " ".join(s.split())
 
     def get_entities(self, list_sentences):
         '''
@@ -16,9 +20,9 @@ class Entity_model():
             - dict_sent_idx2entities: dictionary that maps each sentence idx to a list of entities
         '''
         dict_sent_idx2entities = dict() # this will be the final output
-        list_sentences = [self.__clean_input(s) for s in list_sentences ]
         # for each sentence
         for sent_idx, sent in enumerate(tqdm(list_sentences)):
+            sent = self.__clean_input(sent)
             # initialize the list of entities for the current sentence
             dict_sent_idx2entities[sent_idx] = [] 
             # use spacy processor on the question | context sentence
