@@ -1,1 +1,1 @@
-python extract_ner.py --dataset squad --ner_framework flair --output_dir data/flair
+python extract_ner.py --dataset squad --ner_framework flair --num_samples 10000 --output_dir data/flair

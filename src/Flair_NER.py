@@ -1,10 +1,15 @@
 import spacy
 from tqdm.auto import tqdm
+import flair
 from flair.data import Sentence
 from flair.models import SequenceTagger
+from pathlib import Path
+
+
 
 class Flair_NER():
-    def __init__(self, flair_model="flair/ner-english-ontonotes-large"):
+    def __init__(self, flair_model='flair/ner-english-ontonotes-large', cache='./flair_cache'):
+        flair.cache_root = Path(cache)
         self.tagger = SequenceTagger.load(flair_model)
         self.spacy_nlp = spacy.load('en_core_web_sm')
 
