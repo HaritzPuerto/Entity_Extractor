@@ -32,9 +32,9 @@ if __name__ == '__main__':
 
     for split in dataset.keys():
         if args.num_samples is not None:
-            dataset = Dataset.from_dict(dataset[split][:args.num_samples])
+            dataset_samples = Dataset.from_dict(dataset[split][:args.num_samples])
         else:
-            dataset = Dataset.from_dict(dataset[split])
+            dataset_samples = Dataset.from_dict(dataset[split])
         # 1) setup database
         output_dir = os.path.join(args.output_dir, args.dataset, split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         db_ent_context = SqliteDict(os.path.join(output_dir, 'context_ent.sqlite'))
         
         # 2) extract question entities
-        dict_sent_idx2entities = ent_predictor.get_entities(dataset['question'])
+        dict_sent_idx2entities = ent_predictor.get_entities(dataset_samples['question'])
         for idx, list_ents in dict_sent_idx2entities.items():
             db_ent_question[str(idx)] = list_ents
         # 3) save question entities
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         db_ent_question.close()
 
         # 4) extract context entities
-        dict_sent_idx2entities = ent_predictor.get_entities(dataset['context'])
+        dict_sent_idx2entities = ent_predictor.get_entities(dataset_samples['context'])
         for idx, list_ents in dict_sent_idx2entities.items():
             db_ent_context[str(idx)] = list_ents 
         # 5) save context entities
