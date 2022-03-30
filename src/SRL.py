@@ -33,14 +33,20 @@ class SRL_model():
             print("\t Tuple:", i)
             self.print_srl_tuple(srl_tuple)
 
-    def get_srl_args(self, sent):
-        sent = self.__clean_input(sent)
-        tokenized_sent = self.spacy_nlp(sent)
-        dict_token_idx2char_idx = {i: (x.idx, x.idx+len(x.text)) for i, x in enumerate(tokenized_sent)}
-        srl_predictions = self.predictor.predict_tokenized([w.text for w in tokenized_sent])
-        return self._process_srl_predictions(sent, srl_predictions, dict_token_idx2char_idx)
+    def get_srl_args(self, doc):
+        dict_token_idx2char_idx = dict()
+        spacy_doc = self.spacy_nlp(self.__clean_input(doc))
+        list_srl_tuples = []
+        # for each sentence
+        token_offset = 0 # because we process the doc sent by sent
+        for spacy_sent in spacy_doc.sents:
+            dict_token_idx2char_idx.update({x.i: (x.idx, x.idx+len(x.text)) for x in spacy_sent})
+            srl_pred = self.predictor.predict_tokenized([w.text for w in spacy_sent])
+            list_srl_tuples.extend(self._process_srl_predictions(spacy_doc.text, srl_pred, dict_token_idx2char_idx, token_offset))
+            token_offset += len(spacy_sent)
+        return list_srl_tuples
 
-    def _process_srl_predictions(self, sent, list_srl_instances, dict_token_idx2char_idx):
+    def _process_srl_predictions(self, sent, list_srl_instances, dict_token_idx2char_idx, token_offset):
         '''
         Input: 
             - list_sentensentces (str)
@@ -69,9 +75,9 @@ class SRL_model():
                     tag = tag.split("-")[-1]
                     # and SRL arg may have more than one word
                     if tag in dict_tag2word_idx:
-                        dict_tag2word_idx[tag]['word_idx'].append(word_idx)
+                        dict_tag2word_idx[tag]['word_idx'].append(token_offset+word_idx)
                     else:
-                        dict_tag2word_idx[tag] = {'word_idx': [word_idx]} 
+                        dict_tag2word_idx[tag] = {'word_idx': [token_offset+word_idx]} 
             if len(dict_tag2word_idx) > 1:
                 # we have stored a list of pairs of start and end wordpiece idx for each word
                 # we need to convert it into a pair of (st, end)
