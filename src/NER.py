@@ -37,3 +37,17 @@ class Entity_model():
                             }
                 dict_sent_idx2entities[sent_idx].append(dict_ent)
         return dict_sent_idx2entities
+
+    def get_entities_from_sentence(self, sent):
+        list_entities = []
+        spacy_sent = self.nlp(sent) 
+        # get the entities of the two sentences concatenated (query and context)
+        for e in spacy_sent.ents: 
+            # create the dictionary to store the metadata of the entity
+            dict_ent = {'char_idx': (e.start_char, e.end_char), # eg: (0,3)
+                        'word_idx': (e.start, e.end), # eg: (0,1)
+                        'ent_type': e.label_, # eg: "PERSON"
+                        'text': e.text, # eg: "John"
+                        }
+            list_entities.append(dict_ent)
+        return list_entities
