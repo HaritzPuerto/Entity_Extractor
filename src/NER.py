@@ -40,6 +40,7 @@ class Entity_model():
 
     def get_entities_from_sentence(self, sent):
         list_entities = []
+        sent = self.__clean_input(sent)
         spacy_sent = self.nlp(sent) 
         # get the entities of the two sentences concatenated (query and context)
         for e in spacy_sent.ents: 
@@ -50,4 +51,4 @@ class Entity_model():
                         'text': e.text, # eg: "John"
                         }
             list_entities.append(dict_ent)
-        return list_entities
+        return list_entities, spacy_sent

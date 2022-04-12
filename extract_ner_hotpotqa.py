@@ -57,11 +57,12 @@ if __name__ == '__main__':
 
         # 4) extract context entities
         # for each QA instance
-        for i, x in tqdm(enumerate(dataset_samples)):
+        for i, x in enumerate(tqdm(dataset_samples)):
             golden_context = get_golden_context(x)
             set_golden_titles = set(x['supporting_facts']['title'])
             dict_paragraph_idx2dict_sent_idx2entities = dict()
             char_offset = 0
+            word_offset = 0
             # for each paragraph
             for p_idx, paragraph in enumerate(x['context']['sentences']):
                 if x['context']['title'][p_idx] in set_golden_titles:
@@ -69,14 +70,19 @@ if __name__ == '__main__':
                     # for each setnence
                     for sent_idx, sent in enumerate(paragraph):
                         # extract entities
-                        list_ents = ent_predictor.get_entities_from_sentence(sent)
+                        list_ents, spacy_sent = ent_predictor.get_entities_from_sentence(sent)
                         for e in list_ents:
+                            # char idx
                             st = e['char_idx'][0] + char_offset
                             end = e['char_idx'][1] + char_offset
                             e['char_idx'] = (st, end)
-                            assert golden_context[st:end] == e['text']
+                            # word idx
+                            w_st = e['word_idx'][0] + word_offset
+                            w_end = e['word_idx'][1] + word_offset
+                            e['word_idx'] = (w_st, w_end)
                         dict_sent_idx2entities[sent_idx] = list_ents
                         char_offset += len(sent)
+                        word_offset += len(spacy_sent)
                     dict_paragraph_idx2dict_sent_idx2entities[p_idx] = dict_sent_idx2entities
                     char_offset += 1 # for the space between paragraphs
             db_ent_context[i] = dict_paragraph_idx2dict_sent_idx2entities
