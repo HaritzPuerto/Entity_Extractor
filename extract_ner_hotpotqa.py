@@ -40,7 +40,7 @@ if __name__ == '__main__':
         if args.num_samples is not None:
             dataset_samples = Dataset.from_dict(dataset[split][:args.num_samples])
         else:
-            dataset_samples = Dataset.from_dict(dataset[split])
+            dataset_samples = dataset[split]
         # 1) setup database
         output_dir = os.path.join(args.output_dir, 'hotpotqa', split)
         Path(output_dir).mkdir(parents=True, exist_ok=True)
